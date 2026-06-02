@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABSENSI MOBILE — Next-Gen Portal v10.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030712;
+      --bg-card: rgba(15, 23, 42, 0.35);
+      --accent: #00FFC2;
+      --accent-glow: rgba(0, 255, 194, 0.25);
+      --blue: #00B2FF;
+      --blue-glow: rgba(0, 178, 255, 0.3);
+      --purple: #9D5CFF;
+      --text: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --border: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --holo-glow: rgba(0, 255, 194, 0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; background-color: var(--bg); }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* FUTURISTIC CYBER GRID EFFECT & SCAN LINES + PARTICLES */
+    .cyber-grid-overlay {
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 255, 194, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 194, 0.015) 1px, transparent 1px);
+      background-size: 30px 30px; z-index: -1; pointer-events: none;
+    }
+
+    .cyber-grid-overlay::after {
+      content: '';
+      position: absolute; width: 100%; height: 4px;
+      background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+      opacity: 0.3; top: 0; left: 0;
+      animation: globalScan 8s linear infinite;
+    }
+    @keyframes globalScan {
+      0% { top: -10%; }
+      100% { top: 110%; }
+    }
+
+    .cyber-particles-container {
+      position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden;
+    }
+    .particle {
+      position: absolute; background: var(--accent); border-radius: 50%; opacity: 0.2;
+      animation: floatUp 12s linear infinite;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(105vh) translateX(0) scale(0.5); opacity: 0; }
+      50% { opacity: 0.4; }
+      100% { transform: translateY(-5vh) translateX(50px) scale(1.2); opacity: 0; }
+    }
+
+    .cyber-glow-orb {
+      position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(0, 255, 194, 0.08) 0%, transparent 70%);
+      top: -50px; left: 50%; transform: translateX(-50%); z-index: -1; pointer-events: none; filter: blur(50px);
+    }
+
+    /* NAVIGATION BAR */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      height: 70px; padding: 0 6%;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(3, 7, 18, 0.7); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: transform 0.3s ease-in-out;
+    }
+    nav.nav-hidden { transform: translateY(-100%); }
+    .logo {
+      font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800;
+      display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .logo-symbol {
+      width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--blue)); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; color: #010307; font-weight: 800; font-size: 13px;
+    }
+    .nav-cta {
+      background: linear-gradient(90deg, var(--accent), #00e5ff); color: #000 !important; font-weight: 700;
+      padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    /* HERO AREA ZONE */
+    .hero {
+      padding: 120px 5% 30px; display: flex; flex-direction: column; align-items: center; text-align: center;
+      position: relative;
+    }
+    .cyber-badge {
+      display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 255, 194, 0.03); border: 1px solid rgba(0, 255, 194, 0.2);
+      padding: 6px 14px; border-radius: 100px; font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 25px;
+      backdrop-filter: blur(5px);
+    }
+    .badge-pulse { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(0.9); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 1; } }
+
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(38px, 9vw, 76px); font-weight: 800; line-height: 1.1; margin-bottom: 25px; letter-spacing: -2px; position: relative; }
+    h1 span.neon {
+      background: linear-gradient(90deg, var(--accent), var(--blue), var(--accent));
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: shineText 4s linear infinite;
+      filter: drop-shadow(0 2px 20px rgba(0, 255, 194, 0.15));
+    }
+    @keyframes shineText { to { background-position: 200% center; } }
+
+    /* APP INTRODUCTION HUD MODULE */
+    .app-intro-container {
+      width: 100%; max-width: 500px; margin: 0 auto 30px; text-align: left;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(3, 7, 18, 0.8) 100%);
+      border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px;
+      position: relative; overflow: hidden; backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .app-intro-container::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--accent); }
+    .intro-hud-line { display: flex; justify-content: space-between; font-family: monospace; font-size: 9px; color: var(--accent); margin-bottom: 10px; opacity: 0.8; letter-spacing: 0.5px; }
+    .intro-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; font-weight: 400; }
+    .intro-text strong { color: #fff; font-weight: 600; }
+    .intro-tags { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+    .intro-tag-item { font-size: 9px; font-weight: 700; color: #fff; background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); font-family: monospace; }
+
+    .btn-container { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 320px; margin: 0 auto; }
+    .btn-cyber { padding: 14px 24px; border-radius: 10px; font-size: 14px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: all 0.3s; background: none; border: none; cursor: pointer;}
+    .btn-cyber.primary { background: linear-gradient(90deg, var(--accent), var(--blue)); color: #010307; box-shadow: 0 4px 20px var(--accent-glow); }
+    .btn-cyber.secondary { background: rgba(255, 255, 255, 0.02); color: var(--text); border: 1px solid var(--glass-border); backdrop-filter: blur(5px); }
+
+    /* HUD COUNTER STATISTICS */
+    .hud-stats-section { padding: 20px 6%; display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 500px; margin: 0 auto 30px; }
+    .hud-stat-card { background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .hud-stat-card.accent-glow-border { border-color: rgba(0, 255, 194, 0.2); }
+    .hud-stat-card.blue-glow-border { border-color: rgba(0, 178, 255, 0.2); }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: #fff; }
+    .stat-num.color-acc { color: var(--accent); }
+    .stat-num.color-blu { color: var(--blue); }
+    .stat-lbl { font-size: 11px; color: var(--text-muted); text-align: right; max-width: 60%; font-weight: 500; }
+
+    /* VISUAL PREVIEW 3D PHONES MAIN (DEVICE SIMULATOR) */
+    .visual-container { position: relative; width: 100%; max-width: 100%; margin-top: 30px; perspective: 1500px; overflow: hidden; padding-bottom: 20px; }
+
+    .parallax-stage-wrapper { display: flex; gap: 20px; padding: 15px 8%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; transform-style: preserve-3d; }
+    .parallax-stage-wrapper::-webkit-scrollbar { display: none; }
+
+    .phone-3d-wrap { flex: 0 0 280px; width: 280px; height: 540px; scroll-snap-align: center; transform: rotateX(10deg) rotateY(-5deg); transform-style: preserve-3d; }
+    .phone-3d-body { position: absolute; inset: 0; background: #0b1120; border: 5px solid #1f293d; border-radius: 36px; transform-style: preserve-3d; padding: 14px 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
+    .phone-screen-content { width: 100%; height: 100%; display: flex; flex-direction: column; gap: 10px; background: #040814; border-radius: 24px; padding: 20px 12px 12px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.02); }
+    .phone-notch-bar { width: 85px; height: 14px; background: #000; position: absolute; top: 0; left: 50%; transform: translateX(-50%); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; z-index: 100; }
+
+    .app-header { display: flex; justify-content: space-between; font-family: monospace; font-size: 10px; color: var(--accent); padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .hardware-readout-hud { display: flex; justify-content: space-between; font-family: monospace; font-size: 9px; padding: 6px; background: rgba(0, 255, 194, 0.02); border: 1px dashed rgba(0, 255, 194, 0.15); border-radius: 6px; color: var(--accent); }
+
+    /* 3D BIOMETRIC NODES STYLING */
+    .embedded-face-space { position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; }
+    .blockchain-ring-cluster { position: absolute; width: 100%; height: 100%; animation: spinRing 12s linear infinite; }
+    .crypto-ring { position: absolute; inset: 0; border: 1px dashed rgba(0, 255, 194, 0.2); border-radius: 50%; }
+    .crypto-ring.inner { inset: 15px; border: 1px double rgba(0, 178, 255, 0.15); animation: spinRingRev 6s linear infinite; }
+    @keyframes spinRing { to { transform: rotate(360deg); } }
+    @keyframes spinRingRev { to { transform: rotate(-360deg); } }
+
+    .face-mesh-contour-wrapper { position: relative; width: 70px; height: 85px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,15 C30,15 20,35 20,55 C20,75 35,85 50,85 C65,85 80,75 80,55 C80,35 70,15 50,15 Z" fill="none" stroke="%2300FFC2" stroke-width="0.8" stroke-dasharray="2 2"/><path d="M35,45 C35,45 40,40 45,43 M65,45 C65,45 60,40 55,43 M50,45 L50,65 L45,65 M38,72 C45,78 55,78 62,72" fill="none" stroke="%2300FFC2" stroke-width="1"/></svg>') center no-repeat; opacity: 0.85; }
+
+    /* 3D ANIMATIONS (FACE/GPS) */
+    .dynamic-hardware-stage-3d { position: relative; width: 100%; height: 190px; margin-top: 5px; display: flex; align-items: center; justify-content: center; perspective: 800px; transform-style: preserve-3d; }
+    .face-laser-scanner { position: absolute; width: 150px; height: 20px; left: calc(50% - 75px); background: linear-gradient(to bottom, transparent, rgba(0, 255, 194, 0.25), transparent); border-top: 1px solid var(--accent); z-index: 50; animation: sweepVert 3s ease-in-out infinite; }
+    @keyframes sweepVert { 0%, 100% { top: 10%; } 50% { top: 85%; } }
+
+    .embedded-gps-space { position: absolute; width: 100%; height: 100%; transform: rotateX(40deg) translateZ(10px); transform-style: preserve-3d; }
+    .gps-grid-floor { position: absolute; inset: 0; background: rgba(0, 178, 255, 0.01); border: 1.5px solid rgba(0, 178, 255, 0.3); border-radius: 12px; background-image: linear-gradient(rgba(0,178,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,178,255,0.06) 1px, transparent 1px); background-size: 12px 12px; }
+    .gps-active-vector-path { position: absolute; inset: 15px; border: 1px dashed rgba(0, 255, 194, 0.4); border-radius: 8px; transform-style: preserve-3d; }
+    .live-moving-gps-pin { position: absolute; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent); offset-path: rect(0% auto auto 0% round 8px); animation: followPath 5s linear infinite; top:-6px; left:-6px; }
+    @keyframes followPath { 0% { offset-distance: 0%; } 100% { offset-distance: 100%; } }
+
+    /* WIDGETS */
+    .widget-row { background: rgba(255,255,255,0.02); border: 1px solid var(--border); backdrop-filter: blur(8px); border-radius: 10px; padding: 8px; display: flex; align-items: center; gap: 8px; text-align: left; }
+    .widget-icon { width: 26px; height: 26px; border-radius: 6px; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    .widget-info { display: flex; flex-direction: column; }
+    .widget-info .title { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+    .widget-info .val { font-size: 11px; font-weight: 600; color: #fff; }
+    .app-btn.active-node { background: linear-gradient(90deg, var(--accent), #00e5ff); color: #010307; font-weight: 800; border: none; padding: 10px; border-radius: 10px; font-size: 10px; width: 100%; text-align: center; }
+
+    /* LIVE INTERACTIVE PHONE SIMULATOR AREA */
+    .interactive-simulator-section {
+      padding: 60px 6%; background: radial-gradient(circle at center, rgba(15,23,42,0.3) 0%, rgba(3,7,18,0) 70%);
+      border-top: 1px solid var(--border); position: relative;
+    }
+    .sim-layout-grid { display: grid; grid-template-columns: 1fr; gap: 40px; max-width: 800px; margin: 0 auto; align-items: center; }
+
+    .sim-controller-card {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(4, 8, 20, 0.8) 100%);
+      border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px 20px; backdrop-filter: blur(10px);
+    }
+    .sim-step-item { display: flex; gap: 14px; margin-bottom: 20px; opacity: 0.3; transition: opacity 0.4s ease; }
+    .sim-step-item.active { opacity: 1; }
+    .sim-step-num { width: 28px; height: 28px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: var(--text-muted); font-family: 'Syne', sans-serif; }
+    .sim-step-item.active .sim-step-num { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+    .sim-step-item.active .sim-step-num.blue-style { background: var(--blue); color: #000; border-color: var(--blue); box-shadow: 0 0 10px var(--blue-glow); }
+    .sim-step-text h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+    .sim-step-text p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    .sim-phone-display-center { display: flex; justify-content: center; perspective: 1000px; }
+    .sim-phone-wrap { width: 280px; height: 540px; transform: rotateX(5deg) rotateY(-2deg); transition: transform 0.5s ease; }
+
+    /* Interactive internal states */
+    .sim-screen { background: #03060f !important; }
+    .sim-face-box { width: 110px; height: 110px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; margin: 15px auto; overflow: hidden; transition: border-color 0.3s; }
+    .sim-face-box.scanning { border-color: var(--accent); }
+    .sim-face-box.scanning::after { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent, rgba(0,255,194,0.15), transparent); animation: spinRing 2s linear infinite; }
+    .sim-face-svg { width: 55px; height: 55px; fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 1.5; transition: stroke 0.3s, filter 0.3s; }
+    .sim-face-box.scanning .sim-face-svg { stroke: var(--accent); filter: drop-shadow(0 0 5px var(--accent)); }
+    .sim-face-box.verified { border-color: #00FFC2; background: rgba(0, 255, 194, 0.05); }
+    .sim-face-box.verified .sim-face-svg { stroke: #00FFC2; filter: drop-shadow(0 0 8px var(--accent)); }
+
+    .sim-btn-absen { background: rgba(255,255,255,0.03); color: var(--text-muted); padding: 14px; border-radius: 12px; font-weight: 700; font-size: 12px; width: 100%; border: 1px solid var(--border); text-align: center; cursor: not-allowed; transition: all 0.3s ease; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .sim-btn-absen.ready-to-click { background: linear-gradient(90deg, var(--accent), var(--blue)); color: #000; cursor: pointer; border: none; box-shadow: 0 4px 15px var(--accent-glow); animation: pulseButton 1.5s infinite; }
+    @keyframes pulseButton { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+
+    .sim-success-overlay { position: absolute; inset: 0; background: rgba(4, 8, 20, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 150; }
+    .sim-success-overlay.show { transform: translateY(0); }
+    .success-icon-circle { width: 60px; height: 60px; background: rgba(0, 255, 194, 0.1); border: 2px solid var(--accent); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; margin-bottom: 20px; box-shadow: 0 0 20px var(--accent-glow); }
+
+    /* SECTIONS SOLUTIONS WITH HOLOGRAM DISPLAY */
+    .solutions-section { background: rgba(15, 23, 42, 0.15); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 60px 6%; position: relative; }
+    .section-tag { display: inline-block; font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: clamp(24px, 5vw, 36px); font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
+
+    .interactive-showcase { display: flex; flex-direction: column; gap: 30px; }
+    .showcase-tabs-vertical { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; padding: 5px 5px 15px; scrollbar-width: none; scroll-snap-type: x mandatory; }
+    .showcase-tabs-vertical::-webkit-scrollbar { display: none; }
+
+    .showcase-tab { flex: 0 0 260px; background: rgba(255,255,255,0.01); border: 1px solid var(--border); padding: 18px; border-radius: 14px; text-align: left; scroll-snap-align: center; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; }
+    .showcase-tab h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
+    .showcase-tab p { font-size: 11px; color: rgba(156, 163, 175, 0.7); line-height: 1.5; }
+
+    .showcase-tab.active { background: rgba(255, 255, 255, 0.02); border-color: var(--tab-active-color, var(--accent)); box-shadow: 0 4px 15px rgba(0, 255, 194, 0.05); }
+    .showcase-tab.active h4 { color: #fff; }
+    .showcase-tab.active p { color: var(--text-muted); }
+
+    .tab-progress-bar { position: absolute; bottom: 0; left: 0; height: 2px; width: 0%; background: var(--tab-active-color, var(--accent)); transition: width 4s linear; }
+    .showcase-tab.active .tab-progress-bar { width: 100%; }
+
+    /* SMARTPHONE 3D HOLOGRAM STAGE */
+    .showcase-display-3d { position: relative; display: flex; align-items: center; justify-content: center; height: 480px; perspective: 2000px; margin-top: 20px; width: 100%; }
+    .holo-stage { position: relative; width: 250px; height: 470px; transform: rotateX(20deg) rotateY(-15deg) rotateZ(0deg); transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .showcase-display-3d:hover .holo-stage { transform: rotateX(15deg) rotateY(-5deg) rotateZ(2deg); }
+
+    .holo-base-phone { position: absolute; inset: 0; background: linear-gradient(135deg, #090f1e 0%, #030712 100%); border: 4px solid #1e293b; border-radius: 36px; box-shadow: 0 30px 70px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,255,194,0.05); transform-style: preserve-3d; }
+    .holo-base-phone::after { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 90px; height: 16px; background: #000; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+
+    .holo-projection-space { position: absolute; inset: 0; transform-style: preserve-3d; }
+    .holo-object {
+        position: absolute; inset: 14px; background: linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(4, 8, 20, 0.95) 100%);
+        border: 1.5px solid rgba(0, 255, 194, 0.2); border-radius: 26px; transform: translateZ(35px) scale(0.95); opacity: 0; pointer-events: none;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; padding: 24px 16px; gap: 14px; backdrop-filter: blur(6px);
+    }
+
+    .holo-object.active {
+        opacity: 1; pointer-events: auto; transform: translateZ(50px) scale(1);
+        filter: drop-shadow(0 0 25px var(--holo-glow));
+        border-color: var(--tab-active-color, var(--accent));
+    }
+
+    .holo-card-icon { font-size: 32px; text-align: center; margin: 15px 0 5px; filter: drop-shadow(0 0 8px rgba(255,255,255,0.2)); }
+    .holo-card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; text-align: center; text-transform: uppercase; color: #fff; letter-spacing: 0.5px; }
+    .holo-card-badge { display: inline-block; align-self: center; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--tab-active-color, var(--accent)); color: var(--tab-active-color, var(--accent)); font-family: monospace; font-size: 9px; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+    .holo-card-body { font-size: 12px; color: var(--text-muted); line-height: 1.6; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-top: auto; }
+
+    /* WORKFLOW & FEATURES */
+    .grid-features { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 20px; padding: 40px 6%; }
+    .card-feature { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 20px; }
+    .workflow-timeline { display: flex; flex-direction: column; gap: 16px; }
+    .workflow-step-card { background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border); border-radius: 16px; padding: 22px; position: relative; }
+    .step-num-badge { position: absolute; top: -12px; left: 20px; background: #0f172a; border: 1px solid var(--border); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 800; color: var(--accent); }
+    .workflow-step-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; margin-top: 4px; }
+    .workflow-step-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    /* PRICING SECTION DESIGN */
+    .pricing-section-container { padding: 60px 6%; position: relative; }
+    .pricing-grid-layout { display: grid; grid-template-columns: 1fr; gap: 24px; max-width: 440px; margin: 0 auto; }
+
+    .card-price-node {
+        background: linear-gradient(180deg, rgba(15,23,42,0.45) 0%, rgba(3,7,18,0.75) 100%);
+        border: 1px solid var(--border); border-radius: 24px; padding: 35px 24px;
+        position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(15px);
+    }
+    .card-price-node:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+    .card-price-node.highlighted { border-color: rgba(0, 255, 194, 0.25); box-shadow: 0 0 25px rgba(0, 255, 194, 0.03); }
+    .card-price-node.highlighted:hover { border-color: var(--accent); box-shadow: 0 0 30px rgba(0, 255, 194, 0.12); }
+    .card-price-node.enterprise-glow { border-color: rgba(0, 178, 255, 0.25); }
+    .card-price-node.enterprise-glow:hover { border-color: var(--blue); box-shadow: 0 0 30px rgba(0, 178, 255, 0.15); }
+
+    .price-node-badge { position: absolute; top: 12px; right: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 100px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+    .card-price-node.highlighted .price-node-badge { background: rgba(0, 255, 194, 0.08); border-color: rgba(0, 255, 194, 0.3); color: var(--accent); }
+    .card-price-node.enterprise-glow .price-node-badge { background: rgba(0, 178, 255, 0.08); border-color: rgba(0, 178, 255, 0.3); color: var(--blue); }
+
+    .node-title { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .node-amt { font-family: 'Syne', sans-serif; font-size: 38px; font-weight: 800; color: #fff; display: flex; align-items: baseline; gap: 4px; margin-bottom: 2px; }
+    .node-amt small { font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 400; color: var(--text-muted); }
+    .node-subtext { font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 20px; }
+
+    .node-features { list-style: none; border-top: 1px solid var(--border); padding-top: 20px; margin-bottom: 25px; display: flex; flex-direction: column; gap: 12px; }
+    .node-features li { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+    .node-features li.active-spec { color: var(--text); }
+    .node-features li::before { content: '✓'; color: var(--accent); font-weight: 700; }
+    .card-price-node.enterprise-glow .node-features li::before { color: var(--blue); }
+
+    .btn-price-action { width: 100%; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700; text-align: center; border: 1px solid var(--glass-border); color: #fff; background: transparent; cursor: pointer; transition: all 0.25s ease; text-decoration: none; display: block; }
+    .btn-price-action:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.2); }
+    .card-price-node.highlighted .btn-price-action { background: var(--accent); color: #010307; border: none; box-shadow: 0 4px 15px var(--accent-glow); }
+    .card-price-node.highlighted .btn-price-action:hover { background: #00e5ff; box-shadow: 0 4px 20px rgba(0,229,255,0.3); }
+    .card-price-node.enterprise-glow .btn-price-action { background: linear-gradient(90deg, var(--blue), var(--purple)); color: #fff; border: none; box-shadow: 0 4px 15px var(--blue-glow); }
+    .card-price-node.enterprise-glow .btn-price-action:hover { filter: brightness(1.1); }
+
+    /* ACCORDION HUD FAQ STYLING */
+    .faq-hud-section { padding: 60px 6%; width: 100%; max-width: 500px; margin: 0 auto; }
+    .faq-container { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+    .faq-item {
+      background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; transition: all 0.3s ease;
+    }
+    .faq-trigger {
+      width: 100%; padding: 18px 20px; background: transparent; border: none; outline: none;
+      display: flex; justify-content: space-between; align-items: center; text-align: left;
+      cursor: pointer; font-size: 13px; font-weight: 700; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .faq-trigger span.icon {
+      font-family: monospace; color: var(--accent); font-size: 16px; transition: transform 0.3s;
+    }
+    .faq-content {
+      max-height: 0; overflow: hidden; padding: 0 20px; transition: all 0.3s cubic-bezier(0, 1, 0, 1);
+      font-size: 12px; color: var(--text-muted); line-height: 1.6;
+    }
+    .faq-item.open { border-color: rgba(0, 255, 194, 0.3); background: rgba(0, 255, 194, 0.01); }
+    .faq-item.open .faq-trigger span.icon { transform: rotate(45deg); color: #ff3e3e; }
+    .faq-item.open .faq-content { max-height: 1000px; padding-bottom: 18px; transition: all 0.3s cubic-bezier(1, 0, 1, 0); }
+
+    /* MODAL & FOOTER */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(3, 7, 18, 0.85); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 2000; opacity: 0; pointer-events: none; transition: all 0.3s; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-card { background: #0c1324; border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px 20px; max-width: 360px; width: 90%; text-align: center; }
+    .copy-input-container { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 10px; color: var(--accent); word-break: break-all; margin: 15px 0; font-family: monospace; }
+    .cta-box { background: linear-gradient(135deg, rgba(11,20,44,0.8), rgba(4,8,19,0.95)); border: 1px solid var(--glass-border); border-radius: 24px; padding: 40px 20px; text-align: center; margin: 40px 15px; }
+    footer { background: #02040a; border-top: 1px solid var(--border); padding: 40px 6% 30px; font-size: 12px; color: var(--text-muted); text-align: center; }
+
+    /* DESKTOP RESPONSIVENESS */
+    @media (min-width: 1024px) {
+      .hud-stats-section { grid-template-columns: repeat(3, 1fr); max-width: 960px; gap: 20px; }
+      .sim-layout-grid { grid-template-columns: 1fr 1fr; max-width: 960px; gap: 50px; }
+      .faq-hud-section { max-width: 960px; }
+
+      .parallax-stage-wrapper { display: flex; justify-content: center; gap: 40px; overflow-x: visible; padding: 0; }
+      .phone-3d-wrap { flex: 0 0 290px; transform: rotateX(25deg) rotateZ(-8deg); }
+
+      .interactive-showcase { grid-template-columns: 1.1fr 0.9fr; display: grid; gap: 50px; align-items: center; }
+      .showcase-tabs-vertical { flex-direction: column; overflow-x: visible; gap: 14px; padding: 0; }
+      .showcase-tab { flex: none; width: 100%; }
+      .showcase-display-3d { margin-top: 0; height: 500px; }
+      .holo-stage { width: 260px; height: 490px; }
+
+      .workflow-timeline { grid-template-columns: repeat(3, 1fr); display: grid; gap: 20px; }
+      .pricing-grid-layout { grid-template-columns: repeat(3, 1fr); max-width: 1100px; gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cyber-particles-container" id="particleContainer"></div>
+<div class="cyber-grid-overlay"></div>
+<div class="cyber-glow-orb"></div>
+
+<nav id="navbar">
+  <a href="#" class="logo">
+    <div class="logo-symbol">A</div>
+    ABSENSI <span>MOBILE</span>
+  </a>
+  <a class="nav-cta" href="#" onclick="openDownloadModal(event)">UNDUH</a>
+</nav>
+
+<header class="hero">
+  <div class="cyber-badge"><div class="badge-pulse"></div>Biometric Face Mesh & 3D GPS Engine Ready</div>
+  <h1><span class="neon">ABSENSI MOBILE</span></h1>
+
+  <div class="app-intro-container">
+    <div class="intro-hud-line"><span>SYSTEM_OVERVIEW // CORE_PORTAL</span><span style="color: var(--accent);">● ONLINE</span></div>
+    <p class="intro-text">
+      <strong>ABSENSI MOBILE</strong> adalah platform pelacak kehadiran mutakhir generasi baru yang dirancang khusus untuk memotong birokrasi absensi konvensional. Mengandalkan pemindaian biometrik terenkripsi serta pembatasan koordinat lokasi presisi tinggi guna memastikan data kehadiran tim Anda tetap akurat, transparan, dan terbebas dari segala bentuk manipulasi digital secara waktu nyata langsung dari genggaman ponsel.
+    </p>
+    <div class="intro-tags">
+      <span class="intro-tag-item">Anti-Root Guard</span>
+      <span class="intro-tag-item">Fake-GPS Shield</span>
+      <span class="intro-tag-item">Encrypted Logs</span>
+    </div>
+  </div>
+
+  <div class="btn-container">
+    <button class="btn-cyber primary" onclick="openDownloadModal(event)">📥 Dapatkan Berkas APK</button>
+    <a href="#solusi" class="btn-cyber secondary">Eksplorasi Ruang Solusi</a>
+  </div>
+</header>
+
+<div class="hud-stats-section">
+  <div class="hud-stat-card accent-glow-border"><span class="stat-num color-acc">99.9%</span><span class="stat-lbl">Akurasi Verifikasi Titik Lokasi Radius Bumi</span></div>
+  <div class="hud-stat-card"><span class="stat-num">0%</span><span class="stat-lbl">Risiko Manipulasi Data Log (Anti Fake-GPS)</span></div>
+  <div class="hud-stat-card blue-glow-border"><span class="stat-num color-blu">&lt; 3s</span><span class="stat-lbl">Durasi Kecepatan Pemindaian Matriks Wajah</span></div>
+</div>
+
+<div class="visual-container" id="visualContainerStage">
+  <div class="parallax-stage-wrapper" id="parallaxWrapper">
+    <div class="phone-3d-wrap"><div class="phone-3d-body"><div class="phone-screen-content"><div class="phone-notch-bar"></div><div class="app-header"><span>SECURE FACE NODES</span><span>v8.9</span></div><div class="dynamic-hardware-stage-3d"><div class="embedded-face-space"><div class="blockchain-ring-cluster"><div class="crypto-ring"></div><div class="crypto-ring inner"></div></div><div class="face-laser-scanner"></div><div class="face-mesh-contour-wrapper"></div></div></div><div class="hardware-readout-hud"><span>LIVENESS STATUS</span><span>VERIFIED</span></div><div class="widget-row"><div class="widget-icon">🛡️</div><div class="widget-info"><span class="title">Verifikasi Biometrik</span><span class="val">Struktur Wajah Valid</span></div></div><div class="widget-row"><div class="widget-icon">👤</div><div class="widget-info"><span class="title">Nama Karyawan</span><span class="val">Rayhan Ardiansyah</span></div></div><div class="app-btn active-node">BIOMETRIC ACTIVE</div></div></div></div>
+
+    <div class="phone-3d-wrap"><div class="phone-3d-body"><div class="phone-screen-content"><div class="phone-notch-bar"></div><div class="app-header"><span>3D PATH ENGINE</span><span>GPS_LIVE</span></div><div class="dynamic-hardware-stage-3d"><div class="embedded-gps-space"><div class="gps-grid-floor"></div><div class="gps-active-vector-path"><div class="live-moving-gps-pin"></div></div></div></div><div class="hardware-readout-hud" style="color: var(--blue); border-color: rgba(0,178,255,0.25)"><span>GEOFENCE CHECK</span><span style="animation: pulse 1s infinite">● SECURE</span></div><div class="widget-row"><div class="widget-icon" style="color: var(--blue)">📍</div><div class="widget-info"><span class="title">Koordinat Geofence</span><span class="val">Radius Perimeter Sesuai</span></div></div><div class="widget-row"><div class="widget-icon" style="color: var(--blue)">🔄</div><div class="widget-info"><span class="title">Interval Perangkat</span><span class="val">Terdeteksi Konstan (1s)</span></div></div><div class="app-btn active-node" style="background: linear-gradient(90deg, var(--blue), var(--purple))">TRACKING ON</div></div></div></div>
+  </div>
+
+  <div style="display: flex; justify-content: center; gap: 6px; margin-top: 10px;"><div id="dotA" style="width:6px; height:6px; background:#00FFC2; border-radius:50%; opacity:1; transition:0.3s;"></div><div id="dotB" style="width:6px; height:6px; background:#fff; border-radius:50%; opacity:0.3; transition:0.3s;"></div></div>
+</div>
+
+<section class="interactive-simulator-section">
+  <div style="text-align: center; margin-bottom: 30px;">
+    <span class="section-tag">Uji Coba Pengalaman Digital</span>
+    <h2 class="section-title" style="margin-bottom: 10px;">Live Interactive Phone Simulator</h2>
+  </div>
+
+  <div class="sim-layout-grid">
+    <div class="sim-controller-card">
+      <div class="sim-step-item active" id="stepNode1">
+        <div class="sim-step-num blue-style">1</div>
+        <div class="sim-step-text">
+          <h4>Pengecekan Radius Lokasi (GPS)</h4>
+          <p>Sistem memproses pencarian koordinat satelit untuk memastikan perangkat berada di dalam perimeter aman area kantor.</p>
+        </div>
+      </div>
+      <div class="sim-step-item" id="stepNode2">
+        <div class="sim-step-num">2</div>
+        <div class="sim-step-text">
+          <h4>Kamera Otomatis Foto Muka</h4>
+          <p>Setelah radius terverifikasi aman, modul kamera AI aktif mendeteksi keaslian data biometrik wajah karyawan.</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 30px;">
+        <button class="btn-cyber primary" id="simActionResetBtn" onclick="restartSimulationEngine()" style="font-size: 12px; padding: 10px 20px; width: auto; display: none;">🔄 Mulai Ulang Simulasi</button>
+      </div>
+    </div>
+
+    <div class="sim-phone-display-center">
+      <div class="sim-phone-wrap" id="interactivePhoneFrame">
+        <div class="phone-3d-body">
+          <div class="phone-screen-content sim-screen">
+            <div class="phone-notch-bar"></div>
+            <div class="app-header"><span>LIVE SIMULATOR</span><span id="simTimeReadout">08:00 WIB</span></div>
+
+            <div class="sim-face-box" id="simFaceContainer">
+              <svg class="sim-face-svg" viewBox="0 0 24 24" id="simFaceIcon">
+                <path d="M12 2c3.31 0 6 2.69 6 6 0 3.66-2.58 6.42-5.5 6.92v1.58h1.5c.83 0 1.5.67 1.5 1.5v3h-7v-3c0-.83.67-1.5 1.5-1.5h1.5v-1.58c-2.92-.5-5.5-3.26-5.5-6.92 0-3.31 2.69-6 6-6zM12 4c-2.21 0-4 1.79-4 4 0 2.75 1.76 4.79 4 4.97 2.24-.18 4-2.22 4-4.97 0-2.21-1.79-4-4-4z"/>
+              </svg>
+            </div>
+
+            <div class="hardware-readout-hud" id="simStatusReadout" style="color: var(--blue); border-color: rgba(0, 178, 255, 0.25);">
+              <span>STATUS:</span><span id="simStatusText">CHECKING RADIUS...</span>
+            </div>
+
+            <div class="widget-row">
+              <div class="widget-icon" id="simGeoIcon" style="color: var(--blue);">📡</div>
+              <div class="widget-info">
+                <span class="title">Verifikasi Geofence</span>
+                <span class="val" id="simGeoText">Memeriksa Koordinat Satelit...</span>
+              </div>
+            </div>
+
+            <div class="widget-row">
+              <div class="widget-icon">👤</div>
+              <div class="widget-info">
+                <span class="title">Nama Karyawan</span>
+                <span class="val">User Pengunjung</span>
+              </div>
+            </div>
+
+            <button class="sim-btn-absen" id="simMainTriggerBtn" onclick="executeAbsenClick()">MENCARI LOKASI...</button>
+
+            <div class="sim-success-overlay" id="simSuccessScreen">
+              <div class="success-icon-circle">✓</div>
+              <h4 style="font-family: 'Syne', sans-serif; font-size: 16px; margin-bottom: 8px; color: var(--accent);">ABSENSI BERHASIL!</h4>
+              <p style="font-size: 11px; color: var(--text-muted); line-height: 1.6;">Radius Jarak: 3.8 Meter<br>Biometric Match: 99.8%<br><span style="color:#fff; font-family:monospace;" id="simTimeCompleted">08:00:12</span></p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="solusi" class="solutions-section">
+  <div style="text-align: center; margin-bottom: 25px;">
+    <span class="section-tag">Dirancang Untuk Segala Model Bisnis</span>
+    <h2 class="section-title">Solusi Segala Model Operasional</h2>
+  </div>
+
+  <div class="interactive-showcase">
+    <div class="showcase-tabs-vertical" id="tabsContainer">
+      <div class="showcase-tab active" style="--tab-active-color: #00FFC2;" onmouseenter="manualHoloSwitch(0, 'field')" onclick="manualHoloSwitch(0, 'field')">
+        <h4>🏡 Tim Remote & Lapangan</h4>
+        <p>Validasi ketat pergerakan tim sales dan logistik secara transparan.</p>
+        <div class="tab-progress-bar"></div>
+      </div>
+      <div class="showcase-tab" style="--tab-active-color: #00B2FF;" onmouseenter="manualHoloSwitch(1, 'franchise')" onclick="manualHoloSwitch(1, 'franchise')">
+        <h4>🏪 Retail & Outlet Jaringan</h4>
+        <p>Pantau puluhan cabang toko ritel dari satu dashboard master.</p>
+        <div class="tab-progress-bar"></div>
+      </div>
+      <div class="showcase-tab" style="--tab-active-color: #9D5CFF;" onmouseenter="manualHoloSwitch(2, 'corporate')" onclick="manualHoloSwitch(2, 'corporate')">
+        <h4>🏢 Sektor Korporat Sentral</h4>
+        <p>Selaraskan jadwal hibrida (WFH & WFO) lintas divisi.</p>
+        <div class="tab-progress-bar"></div>
+      </div>
+      <div class="showcase-tab" style="--tab-active-color: #FF9F00;" onmouseenter="manualHoloSwitch(3, 'study')" onclick="manualHoloSwitch(3, 'study')">
+        <h4>🎓 Instansi Studi & Kampus</h4>
+        <p>Presensi kelas mahasiswa otomatis berbasis verifikasi wajah.</p>
+        <div class="tab-progress-bar"></div>
+      </div>
+      <div class="showcase-tab" style="--tab-active-color: #FF3E3E;" onmouseenter="manualHoloSwitch(4, 'factory')" onclick="manualHoloSwitch(4, 'factory')">
+        <h4>🏭 Manufaktur & Pabrik</h4>
+        <p>Kelola jadwal operasional ribuan buruh staff logistik 3-shift.</p>
+        <div class="tab-progress-bar"></div>
+      </div>
+    </div>
+
+    <div class="showcase-display-3d" id="holoShowcaseDisplay">
+      <div class="holo-stage">
+        <div class="holo-base-phone"></div>
+        <div class="holo-projection-space">
+          <div class="holo-object active" id="holo-field">
+            <div class="holo-card-icon">🏡</div>
+            <div class="holo-card-title">Field Tracker</div>
+            <div class="holo-card-badge">Network Node 01</div>
+            <div class="holo-card-body">Sistem enkripsi anti-root hardware memastikan pelacakan armada sales lapangan luar kota berjalan 100% transparan tanpa manipulasi koordinat.</div>
+          </div>
+          <div class="holo-object" id="holo-franchise">
+            <div class="holo-card-icon">🏪</div>
+            <div class="holo-card-title">Retail Matrix</div>
+            <div class="holo-card-badge">Network Node 02</div>
+            <div class="holo-card-body">Pantau kedisiplinan dan rekap absensi kehadiran puluhan cabang toko ritel terintegrasi langsung dalam satu dashboard master korporasi.</div>
+          </div>
+          <div class="holo-object" id="holo-corporate">
+            <div class="holo-card-icon">🏢</div>
+            <div class="holo-card-title">Corporate Suite</div>
+            <div class="holo-card-badge">Network Node 03</div>
+            <div class="holo-card-body">Menyelaraskan skema jadwal jam kerja hibrida (WFH & WFO) lintas divisi kantor pusat secara dinamis tanpa penumpukan antrean manual.</div>
+          </div>
+          <div class="holo-object" id="holo-study">
+            <div class="holo-card-icon">🎓</div>
+            <div class="holo-card-title">Academic Studio</div>
+            <div class="holo-card-badge">Network Node 04</div>
+            <div class="holo-card-body">Menggantikan sistem presensi kelas konvensional dengan pemindaian biometrik berkecepatan tinggi demi mencegah manipulasi penitipan absen.</div>
+          </div>
+          <div class="holo-object" id="holo-factory">
+            <div class="holo-card-icon">🏭</div>
+            <div class="holo-card-title">Factory Floor</div>
+            <div class="holo-card-badge">Network Node 05</div>
+            <div class="holo-card-body">Menggantikan sistem absensi konvensional dengan pencatatan shift dinamis buruh pabrik secara presisi yang sinkron ke sistem payroll otomatis.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding: 50px 6%;">
+  <div style="text-align: center; margin-bottom: 25px;"><span class="section-tag">Alur Integrasi</span><h2 class="section-title">3 Langkah Mudah Memulai</h2></div>
+  <div class="workflow-timeline">
+    <div class="workflow-step-card"><div class="step-num-badge">01</div><h4>Unduh & Pasang</h4><p>Dapatkan berkas instalasi APK resmi secara aman melalui tautan direktori unduh di portal ini.</p></div>
+    <div class="workflow-step-card"><div class="step-num-badge">02</div><h4>Daftarkan Anggota Tim</h4><p>Masukkan koordinat perimeter kantor dan daftarkan ID otentikasi perangkat tim Anda.</p></div>
+    <div class="workflow-step-card"><div class="step-num-badge">03</div><h4>Siap Operasional!</h4><p>Sistem aktif sepenuhnya. Seluruh staf dapat mencatatkan kehadiran harian secara aman.</p></div>
+  </div>
+</section>
+
+<section id="harga" class="pricing-section-container">
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h2 class="section-title" style="font-family: 'Syne', sans-serif; font-size: clamp(26px, 6vw, 38px); font-weight: 800; letter-spacing: -1px; background: linear-gradient(90deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">HARGA YANG KAMI BERIKAN</h2>
+  </div>
+
+  <div class="pricing-grid-layout">
+    <div class="card-price-node">
+      <div class="price-node-badge">Harga Hemat</div>
+      <div class="node-title">Sobat UMKM</div>
+      <div class="node-amt">Rp 249k<small>/ bulan</small></div>
+      <div class="node-subtext">Maksimal kuota 25 User</div>
+      <ul class="node-features">
+        <li class="active-spec">Kuota Hingga 25 Karyawan</li>
+        <li class="active-spec">Anti Fake-GPS &amp; Root Shield</li>
+        <li class="active-spec">Proteksi Biometrik Wajah AI</li>
+        <li class="active-spec">Gratis Perawatan Sistem Dasar</li>
+        <li>SLA Dukungan Standard Chat</li>
+      </ul>
+      <button class="btn-price-action" onclick="openDownloadModal(event)">Pilih Paket Hemat 25</button>
+    </div>
+
+    <div class="card-price-node highlighted">
+      <div class="price-node-badge">Paling Populer</div>
+      <div class="node-title">Bisnis Berkembang</div>
+      <div class="node-amt">Rp 449k<small>/ bulan</small></div>
+      <div class="node-subtext" style="color: var(--blue);">Maksimal kuota 50 User</div>
+      <ul class="node-features">
+        <li class="active-spec">Kuota Hingga 50 Karyawan</li>
+        <li class="active-spec">Multi-Radius Geofencing Akurat</li>
+        <li class="active-spec">Proteksi Biometrik Wajah AI</li>
+        <li class="active-spec">Gratis Perawatan Sistem Dasar</li>
+        <li class="active-spec">SLA Dukungan Standard Chat</li>
+      </ul>
+      <button class="btn-price-action" onclick="openDownloadModal(event)">Pilih Paket Hemat 50</button>
+    </div>
+
+    <div class="card-price-node enterprise-glow">
+      <div class="price-node-badge">Diatas 50 User</div>
+      <div class="node-title">Enterprise Custom</div>
+      <div class="node-amt">Rp 15k<small>/ user / bln</small></div>
+      <div class="node-subtext" style="color: var(--purple);">Skala Korporat Besar</div>
+      <ul class="node-features">
+        <li class="active-spec">Kuota Fleksibel (51 - 1000+ User)</li>
+        <li class="active-spec">Server Cloud Terdedikasi Cepat</li>
+        <li class="active-spec">API Sinkronisasi Sistem Payroll</li>
+        <li class="active-spec">Full Perawatan Sistem Tier-1</li>
+        <li class="active-spec">Dedicated WhatsApp Group 24/7</li>
+      </ul>
+      <a class="btn-price-action" href="https://wa.me/628xxxxxxxxxx?text=Halo%20Admin%20Absensi%20Mobile,%20saya%20tertarik%20dengan%20Paket%20Custom%20Enterprise." target="_blank">Hubungi Tim Sales</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq-hud-section">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <span class="section-tag">Pusat Informasi</span>
+    <h2 class="section-title" style="font-size: 26px;">Pertanyaan Terenkripsi (FAQ)</h2>
+  </div>
+  <div class="faq-container">
+    <div class="faq-item">
+      <button class="faq-trigger" onclick="toggleFaq(this)">Bagaimana jika karyawan mematikan GPS perangkat mereka? <span class="icon">+</span></button>
+      <div class="faq-content">Aplikasi akan otomatis mengunci fungsi kirim kehadiran dan memunculkan notifikasi peringatan sistem. Anggota tim diwajibkan menyalakan modul satelit GPS akurasi tinggi agar enkripsi matriks perimeter kantor dapat tervalidasi kembali.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-trigger" onclick="toggleFaq(this)">Apakah aplikasi ini bisa dimanipulasi dengan aplikasi Fake-GPS? <span class="icon">+</span></button>
+      <div class="faq-content">Sama sekali tidak bisa. Sistem kami dipersenjatai dengan *Fake-GPS Shield* level perangkat keras (hardware level logs detector) yang mampu mengidentifikasi serta memblokir langsung segala bentuk aplikasi pihak ketiga penyedia lokasi palsu atau perangkat yang telah di-*root*.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-trigger" onclick="toggleFaq(this)">Apakah pemindaian wajah biometrik ini boros daya baterai ponsel? <span class="icon">+</span></button>
+      <div class="faq-content">Tidak. Algoritma kalkulasi *Face Mesh* kami berjalan secara lokal dan instan dalam durasi di bawah 3 detik hanya sewaktu menekan tombol absen, sehingga tidak membebani latar belakang sistem operasi baterai smartphone.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-trigger" onclick="toggleFaq(this)">Bagaimana mekanisme integrasi dengan sistem penggajian / payroll? <span class="icon">+</span></button>
+      <div class="faq-content">Seluruh rekapitulasi jam kerja valid dapat diunduh dalam format berkas Excel/CSV terstruktur siap pakai. Untuk paket Enterprise, ekspor log absensi dapat disinkronisasikan langsung ke server internal perusahaan Anda via sistem REST-API aman.</div>
+    </div>
+  </div>
+</section>
+
+<div class="modal-overlay" id="downloadApkModal" onclick="checkOuterModalClick(event)">
+  <div class="modal-card">
+    <span style="font-size:36px;">🤖</span>
+    <h3>Unduh Berkas Aplikasi</h3>
+    <p style="font-size: 12px; color: var(--text-muted); margin: 10px 0;">Salin tautan direktori Google Drive resmi untuk akses berkas APK:</p>
+    <div class="copy-input-container" id="driveLinkUrl">https://drive.google.com/drive/folders/1TwKw2NgYPmyqm5ihzyheDgoibExHjNfL?usp=sharing</div>
+    <div style="display: flex; flex-direction: column-reverse; gap: 8px; margin-top: 15px;">
+      <button class="btn-price" onclick="closeApkModal()" style="color:var(--text-muted); padding:10px; border-radius:8px; border:1px solid var(--border); background:transparent; cursor:pointer; width:100%;">Kembali</button>
+      <button class="btn-price" id="actionBtnLabel" onclick="executeCopyAndRedirect()" style="background:var(--accent); color:#000; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:700; width:100%;">Salin & Buka Tautan</button>
+    </div>
+  </div>
+</div>
+
+<div class="cta-box">
+  <h2 style="font-family:'Syne', sans-serif; font-size:24px; margin-bottom:12px;">Siap Mengubah Sistem Absensi Anda?</h2>
+  <button class="btn-cyber primary" onclick="openDownloadModal(event)">📥 UNDUH SEKARANG</button>
+</div>
+
+<footer>
+  <div class="logo" style="justify-content: center; margin-bottom: 15px;"><div class="logo-symbol">A</div>ABSENSI <span>MOBILE</span></div>
+  <p style="font-size: 11px; color: var(--text-muted);">Layanan Teknis: <a href="mailto:support@absensimobile.id" style="color:var(--accent); text-decoration:none;">support@absensimobile.id</a></p>
+  <div style="border-top: 1px solid var(--border); padding-top: 20px; margin-top: 20px;"><p>&copy; 2026 ABSENSI MOBILE. Hak Cipta Dilindungi.</p></div>
+</footer>
+
+<script>
+  // GLOBAL NAVBAR AUTO-HIDE CONTROLLER
+  const navbar = document.getElementById('navbar');
+  let lastScrollY = window.scrollY;
+  window.addEventListener('scroll', () => {
+      if (window.scrollY > lastScrollY && window.scrollY > 100) navbar.classList.add('nav-hidden');
+      else navbar.classList.remove('nav-hidden');
+      lastScrollY = window.scrollY;
+  });
+
+  // RE-LINK SWIPER DETECTOR DOT INDICATION
+  const trackingTrack = document.getElementById('parallaxWrapper'), dotA = document.getElementById('dotA'), dotB = document.getElementById('dotB');
+  if(trackingTrack) {
+      trackingTrack.addEventListener('scroll', () => {
+          if (trackingTrack.scrollLeft > (trackingTrack.offsetWidth / 2)) { dotA.style.opacity = '0.3'; dotB.style.opacity = '1'; dotB.style.background = '#00FFC2'; dotA.style.background = '#fff'; }
+          else { dotA.style.opacity = '1'; dotB.style.opacity = '0.3'; dotA.style.background = '#00FFC2'; dotB.style.background = '#fff'; }
+      });
+  }
+
+  // ===================================================
+  // BARU: LOGIKA ENGINE LIVE INTERACTIVE PHONE SIMULATOR
+  // ===================================================
+  const step1 = document.getElementById('stepNode1');
+  const step2 = document.getElementById('stepNode2');
+  const simFace = document.getElementById('simFaceContainer');
+  const simStatusBox = document.getElementById('simStatusReadout');
+  const simStatusTxt = document.getElementById('simStatusText');
+  const simGeoIcon = document.getElementById('simGeoIcon');
+  const simGeoTxt = document.getElementById('simGeoText');
+  const simBtn = document.getElementById('simMainTriggerBtn');
+  const simSuccess = document.getElementById('simSuccessScreen');
+  const simResetBtn = document.getElementById('simActionResetBtn');
+
+  function updateClockRealtime() {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + " WIB";
+      document.getElementById('simTimeReadout').innerText = timeStr;
+      document.getElementById('simTimeCompleted').innerText = now.toTimeString().split(' ')[0];
+  }
+  setInterval(updateClockRealtime, 1000);
+  updateClockRealtime();
+
+  // Memulai Alur Simulasi Otomatis
+  function initSimulationEngine() {
+      // Skenario Langkah 1: Cek Lokasi Radius GPS Terlebih Dahulu
+      setTimeout(() => {
+          simGeoIcon.innerText = "📍";
+          simGeoIcon.style.color = "var(--accent)";
+          simGeoTxt.innerHTML = "Radius Valid <span style='color:var(--accent); font-weight:700;'>[DI DALAM AREA]</span>";
+
+          simStatusBox.style.color = "var(--accent)";
+          simStatusBox.style.borderColor = "rgba(0, 255, 194, 0.25)";
+          simStatusTxt.innerText = "GEOFENCE MATCH: 100%";
+
+          // Berpindah Menuju Langkah 2: Mengaktifkan Kamera Untuk Foto Muka
+          setTimeout(() => {
+              step1.classList.remove('active');
+              step2.classList.add('active');
+
+              simFace.classList.add('scanning');
+              simStatusBox.style.color = "var(--accent)";
+              simStatusBox.style.borderColor = "rgba(0, 255, 194, 0.2)";
+              simStatusTxt.innerText = "SCANNING FACE BIOMETRIC...";
+
+              // Proses Foto Muka Selesai Berhasil Dicocokkan
+              setTimeout(() => {
+                  simFace.classList.remove('scanning');
+                  simFace.classList.add('verified');
+                  simStatusTxt.innerText = "BIOMETRIC MATCH: 99.8%";
+
+                  // Langkah 3: Membuka Kunci Akses Klik Tombol Absensi
+                  simBtn.className = "sim-btn-absen ready-to-click";
+                  simBtn.innerText = "KLIK ABSEN MASUK SEKARANG";
+              }, 2000); // Waktu Pemindaian Kamera (2 Detik)
+
+          }, 1000);
+
+      }, 1800); // Waktu Pengecekan Geofence Pertama Kali (1.8 Detik)
+  }
+
+  function executeAbsenClick() {
+      if(!simBtn.classList.contains('ready-to-click')) return;
+
+      // Menampilkan Layar Keberhasilan Pengiriman Log Presensi
+      simSuccess.classList.add('show');
+      simResetBtn.style.display = "inline-block";
+  }
+
+  function restartSimulationEngine() {
+      // Mengembalikan Seluruh Tampilan Simulasi ke Titik Awal Semula
+      simSuccess.classList.remove('show');
+      simResetBtn.style.display = "none";
+      step1.classList.add('active');
+      step2.classList.remove('active');
+
+      simFace.className = "sim-face-box";
+      simStatusBox.style.color = "var(--blue)";
+      simStatusBox.style.borderColor = "rgba(0, 178, 255, 0.25)";
+      simStatusTxt.innerText = "CHECKING RADIUS...";
+
+      simGeoIcon.innerText = "📡";
+      simGeoIcon.style.color = "var(--blue)";
+      simGeoTxt.innerText = "Memeriksa Koordinat Satelit...";
+
+      simBtn.className = "sim-btn-absen";
+      simBtn.innerText = "MENCARI LOKASI...";
+
+      // Mengeksekusi Ulang Sistem Roda Simulasi
+      initSimulationEngine();
+  }
+
+  // Meluncurkan Simulasi Secara Otomatis Saat Halaman Selesai Dimuat
+  window.addEventListener('DOMContentLoaded', initSimulationEngine);
+
+
+  // GENERATE FLOATING CYBER BACKGROUND PARTICLES MURNI
+  const particleContainer = document.getElementById('particleContainer');
+  const totalParticles = window.innerWidth > 1024 ? 30 : 12;
+  for (let i = 0; i < totalParticles; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.width = p.style.height = Math.random() * 4 + 2 + 'px';
+      p.style.animationDelay = Math.random() * 8 + 's';
+      p.style.animationDuration = Math.random() * 6 + 8 + 's';
+      if(Math.random() > 0.5) p.style.backgroundColor = '#00B2FF';
+      particleContainer.appendChild(p);
+  }
+
+  // AUTO & MANUAL SWAP HOLOGRAM INTERACTIVE TABS + HOVER MIRROR EFFECT
+  const sectors = ['field', 'franchise', 'corporate', 'study', 'factory'];
+  const hexMirrorColors = ['rgba(0, 255, 194, 0.15)', 'rgba(0, 178, 255, 0.15)', 'rgba(157, 92, 255, 0.15)', 'rgba(255, 159, 0, 0.15)', 'rgba(255, 62, 62, 0.15)'];
+  let currentActiveIndex = 0;
+  let autoRotationTimer = setInterval(autoRotateTabs, 4000);
+
+  function triggerHoloEngine(tabIndex, sectorName) {
+      const allTabs = document.querySelectorAll('.showcase-tab');
+      allTabs.forEach(t => t.classList.remove('active'));
+      allTabs[tabIndex].classList.add('active');
+
+      document.querySelectorAll('.holo-object').forEach(obj => obj.classList.remove('active'));
+      document.getElementById('holo-' + sectorName).classList.add('active');
+
+      const displayStage = document.getElementById('holoShowcaseDisplay');
+      displayStage.style.setProperty('--tab-active-color', allTabs[tabIndex].style.getPropertyValue('--tab-active-color'));
+      document.documentElement.style.setProperty('--holo-glow', hexMirrorColors[tabIndex]);
+
+      const targetTab = allTabs[tabIndex];
+      const container = document.getElementById('tabsContainer');
+      if(window.innerWidth < 1024) {
+          container.scrollTo({ left: targetTab.offsetLeft - 20, behavior: 'smooth' });
+      }
+  }
+
+  // ACCORDION HUD FAQ SCRIPT ENGINE CLOSURE
+  function toggleFaq(buttonElement) {
+      const parentItem = buttonElement.parentElement;
+      const isCurrentlyOpen = parentItem.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(item => item.classList.remove('open'));
+      if (!isCurrentlyOpen) parentItem.classList.add('open');
+  }
+
+  function autoRotateTabs() {
+      currentActiveIndex = (currentActiveIndex + 1) % sectors.length;
+      triggerHoloEngine(currentActiveIndex, sectors[currentActiveIndex]);
+  }
+
+  function manualHoloSwitch(tabIndex, sectorName) {
+      clearInterval(autoRotationTimer);
+      currentActiveIndex = tabIndex;
+      triggerHoloEngine(tabIndex, sectorName);
+      autoRotationTimer = setInterval(autoRotateTabs, 5000);
+  }
+
+  // ARCHITECTURE SYSTEM DIRECTORY DOWNLOAD MODAL
+  const overlayNode = document.getElementById('downloadApkModal'), ctaTextNode = document.getElementById('actionBtnLabel');
+  function openDownloadModal(e) { e.preventDefault(); overlayNode.classList.add('active'); }
+  function closeApkModal() { overlayNode.classList.remove('active'); }
+  function checkOuterModalClick(e) { if (e.target === overlayNode) closeApkModal(); }
+  function executeCopyAndRedirect() {
+      const link = document.getElementById('driveLinkUrl').innerText;
+      navigator.clipboard.writeText(link).then(() => {
+          ctaTextNode.innerText = '✓ Berhasil Tersalin!';
+          setTimeout(() => { window.open(link, '_blank'); closeApkModal(); ctaTextNode.innerText = 'Salin & Buka Tautan'; }, 800);
+      });
+  }
+</script>
+</body>
+</html>
